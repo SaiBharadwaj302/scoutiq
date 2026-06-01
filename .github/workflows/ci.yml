@@ -1,0 +1,53 @@
+name: ScoutIQ CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB:       scoutiq_test
+          POSTGRES_USER:     scoutiq_user
+          POSTGRES_PASSWORD: scoutiq_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Lint with ruff
+        run: ruff check .
+
+      - name: Type check with mypy
+        run: mypy pipeline/ models/ api/ db/ --ignore-missing-imports
+
+      - name: Run tests
+        env:
+          POSTGRES_HOST:        localhost
+          POSTGRES_DB:          scoutiq_test
+          POSTGRES_USER:        scoutiq_user
+          POSTGRES_PASSWORD:    scoutiq_pass
+          MLFLOW_TRACKING_URI:  file:./mlruns
+        run: pytest tests/ -v --tb=short

@@ -1,0 +1,47 @@
+services:
+
+  # ── PostgreSQL Feature Store ────────────────────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: scoutiq_postgres
+    environment:
+      POSTGRES_DB:       scoutiq
+      POSTGRES_USER:     scoutiq_user
+      POSTGRES_PASSWORD: scoutiq_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scoutiq_user -d scoutiq"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # ── FastAPI App ─────────────────────────────────────────────────────────────
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: scoutiq_api
+    ports:
+      - "8000:8000"
+    environment:
+      POSTGRES_HOST:       postgres
+      POSTGRES_PORT:       5432
+      POSTGRES_DB:         scoutiq
+      POSTGRES_USER:       scoutiq_user
+      POSTGRES_PASSWORD:   scoutiq_pass
+      MLFLOW_TRACKING_URI: file:./mlruns
+    volumes:
+      - .:/app
+      - ./mlruns:/app/mlruns
+    command: python run_api.py
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

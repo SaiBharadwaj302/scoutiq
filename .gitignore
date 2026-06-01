@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+
+# Environment
+.env
+venv/
+.venv/
+
+# Data (clone StatsBomb repo separately)
+data/statsbomb/
+
+# MLflow artifacts (stored in Docker volume)
+mlruns/
+
+# Notebooks outputs
+notebooks/.ipynb_checkpoints/
+
+# Miscellaneous
+*.docx
+*.zip
+install_log.txt
+
+# IDE
+.vscode/
+.idea/
