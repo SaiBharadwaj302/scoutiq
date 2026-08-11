@@ -5,7 +5,6 @@ POST /v1/predict/xg
 Given a shot event, returns the expected goals probability.
 """
 import math
-import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 

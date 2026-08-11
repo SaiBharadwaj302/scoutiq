@@ -7,7 +7,6 @@ Tests run without a live database — all inputs are synthetic DataFrames.
 import math
 import numpy as np
 import pandas as pd
-import pytest
 
 from models.xg.features import build_features as build_xg_features, BASE_FEATURES, SPATIAL_FEATURES_360
 from models.pass_success.features import build_features as build_pass_features
@@ -81,7 +80,6 @@ class TestXGFeatures:
     def test_missing_distance_imputed(self):
         """NaN distance is filled: no NaN should survive in the output feature matrix.
         This verifies the fallback logic works in a realistic multi-row batch."""
-        import numpy as np
         two_rows = pd.concat([
             _make_shot_row(distance_to_goal=22.0),
             _make_shot_row(distance_to_goal=float("nan")),

@@ -97,7 +97,7 @@ def extract_360_shot_features(
             continue
         loc = frame.get("location", [])
         fx, fy = safe_location(loc)
-        if fx is None:
+        if fx is None or fy is None:
             continue
 
         teammate  = frame.get("teammate", False)
@@ -111,8 +111,10 @@ def extract_360_shot_features(
             proj = (px * goal_vec_x + py * goal_vec_y) / (goal_vec_len**2)
             if 0 < proj < 1:
                 perp = math.sqrt((px - proj*goal_vec_x)**2 + (py - proj*goal_vec_y)**2)
-                if perp < 2: defenders_2m += 1
-                if perp < 5: defenders_5m += 1
+                if perp < 2:
+                    defenders_2m += 1
+                if perp < 5:
+                    defenders_5m += 1
             if fx > 102 and 18 < fy < 62:
                 if is_keeper:
                     gk_x, gk_y = fx, fy
@@ -122,7 +124,10 @@ def extract_360_shot_features(
             if fx > 102 and 18 < fy < 62:
                 attackers_box += 1
 
-    gk_dist = math.sqrt((gk_x - GOAL_CENTRE[0])**2 + (gk_y - GOAL_CENTRE[1])**2) if gk_x else None
+    gk_dist = (
+        math.sqrt((gk_x - GOAL_CENTRE[0])**2 + (gk_y - GOAL_CENTRE[1])**2)
+        if gk_x is not None and gk_y is not None else None
+    )
 
     return {
         "defenders_in_2m_cone":       defenders_2m,
@@ -161,7 +166,7 @@ def extract_360_pass_features(
             continue
         loc = frame.get("location", [])
         fx, fy = safe_location(loc)
-        if fx is None or frame.get("teammate", False):
+        if fx is None or fy is None or frame.get("teammate", False):
             continue
 
         dist_end = math.sqrt((fx - end_x)**2 + (fy - end_y)**2)

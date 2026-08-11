@@ -16,7 +16,7 @@ from __future__ import annotations
 
 import os
 import json
-from datetime import datetime, timedelta
+from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
@@ -37,6 +37,7 @@ REPORTS_DIR         = Path(os.getenv("DRIFT_REPORTS_DIR", "reports/drift"))
 DRIFT_THRESHOLD     = float(os.getenv("DRIFT_THRESHOLD", "0.2"))   # share of drifted features
 REFERENCE_DAYS      = int(os.getenv("DRIFT_REFERENCE_DAYS", "30")) # how old the reference window is
 CURRENT_DAYS        = int(os.getenv("DRIFT_CURRENT_DAYS",   "7"))  # recency of current window
+FALLBACK_ROW_LIMIT  = int(os.getenv("DRIFT_FALLBACK_ROW_LIMIT", "100000"))  # cap on full-table fallback loads
 
 
 # ── Features to monitor ───────────────────────────────────────────────────────
@@ -79,14 +80,26 @@ def _load_pass_window(days_ago_start: int, days_ago_end: int) -> pd.DataFrame:
 
 
 def _load_all_shots() -> pd.DataFrame:
-    """Fallback: load all shots as reference if time windows are too small."""
-    query = f"SELECT {', '.join(SHOT_MONITOR_COLS)} FROM shot_features"
+    """Fallback: load a bounded, temporally-ordered sample when time windows are too small.
+
+    Capped at FALLBACK_ROW_LIMIT rows — pulling the entire table (millions of rows
+    for pass_features) into a pandas object array can exhaust available memory.
+    """
+    query = f"""
+        SELECT {', '.join(SHOT_MONITOR_COLS)} FROM shot_features
+        ORDER BY ingested_at
+        LIMIT {FALLBACK_ROW_LIMIT}
+    """
     with get_connection() as conn:
         return pd.read_sql(query, conn)
 
 
 def _load_all_passes() -> pd.DataFrame:
-    query = f"SELECT {', '.join(PASS_MONITOR_COLS)} FROM pass_features"
+    query = f"""
+        SELECT {', '.join(PASS_MONITOR_COLS)} FROM pass_features
+        ORDER BY ingested_at
+        LIMIT {FALLBACK_ROW_LIMIT}
+    """
     with get_connection() as conn:
         return pd.read_sql(query, conn)
 

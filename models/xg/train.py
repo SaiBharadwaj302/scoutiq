@@ -12,13 +12,11 @@ Run directly:
     python -m models.xg.train
 """
 import os
-from random import sample
 import warnings
-warnings.filterwarnings("ignore")
+from typing import Any
 
 import mlflow
 import mlflow.sklearn
-import numpy as np
 import pandas as pd
 import shap
 import matplotlib.pyplot as plt
@@ -30,12 +28,12 @@ from sklearn.metrics import (
     roc_auc_score, brier_score_loss,
     average_precision_score, log_loss,
 )
-from sklearn.model_selection import StratifiedKFold, cross_val_score
 import lightgbm as lgb
 from dotenv import load_dotenv
 
 from models.xg.features import load_training_data, get_feature_names
 
+warnings.filterwarnings("ignore")
 load_dotenv()
 
 # ── MLflow Setup ──────────────────────────────────────────────────────────────
@@ -44,7 +42,7 @@ EXPERIMENT_NAME = "scoutiq_xg"
 MODEL_NAME      = "scoutiq_xg"
 
 # ── Hyperparameters ───────────────────────────────────────────────────────────
-LGBM_PARAMS = {
+LGBM_PARAMS: dict[str, Any] = {
     "n_estimators":    500,
     "learning_rate":   0.05,
     "num_leaves":      63,
@@ -100,10 +98,9 @@ def train_val_split(
     )
 
 
-def evaluate_model(model, X_val: pd.DataFrame, y_val: pd.Series) -> dict:
+def evaluate_model(model, X_val: pd.DataFrame, y_val: pd.Series) -> tuple[dict, Any]:
     """Compute all evaluation metrics."""
     probs = model.predict_proba(X_val)[:, 1]
-    preds = model.predict(X_val)
 
     metrics = {
         "auc_roc":          roc_auc_score(y_val, probs),
@@ -135,7 +132,7 @@ def plot_calibration(y_val, probs, run_id: str) -> str:
     return path
 
 
-def plot_shap(model, X_val: pd.DataFrame, run_id: str) -> str:
+def plot_shap(model, X_val: pd.DataFrame, run_id: str) -> str | None:
     """Generate SHAP summary plot for the base LightGBM model."""
     try:
         # Extract base LightGBM from stacking classifier

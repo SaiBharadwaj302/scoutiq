@@ -9,10 +9,10 @@ optuna==3.6.1
 optuna-integration==3.6.0
 shap==0.45.1
 
-# Deep Learning (Project 2 - install later)
-# torch==2.3.1
-# pytorch-forecasting==1.1.0
-# pytorch-lightning==2.3.0
+# Deep Learning
+torch==2.3.1
+torchvision==0.18.1
+torchaudio==2.3.1
 
 # API
 fastapi==0.111.0

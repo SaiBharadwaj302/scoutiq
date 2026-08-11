@@ -15,7 +15,6 @@ import pandas as pd
 import streamlit as st
 import matplotlib.pyplot as plt
 import matplotlib.patches as patches
-from matplotlib.patches import FancyArrowPatch
 
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -97,9 +96,12 @@ def draw_pitch(ax, color="white", linecolor="#333333"):
 
 
 def xg_color(xg: float) -> str:
-    if xg < 0.05:   return "#3498db"
-    if xg < 0.15:   return "#2ecc71"
-    if xg < 0.30:   return "#f39c12"
+    if xg < 0.05:
+        return "#3498db"
+    if xg < 0.15:
+        return "#2ecc71"
+    if xg < 0.30:
+        return "#f39c12"
     return "#e74c3c"
 
 

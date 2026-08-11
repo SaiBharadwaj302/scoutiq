@@ -154,7 +154,7 @@ def tune_model(
     y: pd.Series,
     n_trials: int = DEFAULT_TRIALS,
     model_name: str = "model",
-) -> dict:
+) -> tuple[dict, optuna.Study]:
     """
     Run Optuna Bayesian search for one base model.
     Returns the best hyperparameter dict found.
@@ -251,9 +251,11 @@ def plot_calibration(y_val, probs, run_id: str) -> str:
     ax.set_xlabel("Mean predicted xG")
     ax.set_ylabel("Actual goal rate")
     ax.set_title("xG 3.0 — Calibration Curve")
-    ax.legend(); ax.grid(True, alpha=0.3)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
     path = f"xg_calibration_{run_id[:8]}.png"
-    fig.savefig(path, dpi=100, bbox_inches="tight"); plt.close(fig)
+    fig.savefig(path, dpi=100, bbox_inches="tight")
+    plt.close(fig)
     return path
 
 
@@ -272,7 +274,8 @@ def plot_shap(model, X_val: pd.DataFrame, run_id: str) -> str | None:
         shap.summary_plot(shap_vals, sample, plot_type="bar", show=False)
         plt.title("xG 3.0 — Feature Importance (SHAP via LightGBM)")
         path = f"xg_shap_{run_id[:8]}.png"
-        plt.gcf().savefig(path, dpi=100, bbox_inches="tight"); plt.close()
+        plt.gcf().savefig(path, dpi=100, bbox_inches="tight")
+        plt.close()
         return path
     except Exception as e:
         logger.warning(f"SHAP plot skipped: {e}")
@@ -372,11 +375,13 @@ def train_xg_model_v2(
 
         # Artifacts
         cal_path = plot_calibration(y_val, probs, run_id)
-        mlflow.log_artifact(cal_path); os.remove(cal_path)
+        mlflow.log_artifact(cal_path)
+        os.remove(cal_path)
 
         shap_path = plot_shap(model, X_val, run_id)
         if shap_path:
-            mlflow.log_artifact(shap_path); os.remove(shap_path)
+            mlflow.log_artifact(shap_path)
+            os.remove(shap_path)
 
         mlflow.log_param("features", ",".join(get_feature_names()))
 
@@ -420,7 +425,7 @@ if __name__ == "__main__":
     )
 
     print(f"\n{'='*50}")
-    print(f"xG 3.0 Final Results")
+    print("xG 3.0 Final Results")
     print(f"{'='*50}")
     print(f"AUC-ROC:       {results['auc_roc']:.4f}")
     print(f"Brier Score:   {results['brier_score']:.4f}")

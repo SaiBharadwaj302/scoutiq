@@ -17,6 +17,9 @@ data/statsbomb/
 # MLflow artifacts (stored in Docker volume)
 mlruns/
 
+# Generated drift reports
+reports/
+
 # Notebooks outputs
 notebooks/.ipynb_checkpoints/
 

@@ -9,6 +9,14 @@ version = "1.0.0"
 [tool.setuptools.packages.find]
 where = ["."]
 
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+# E402 is expected in Streamlit pages, which must call sys.path.insert()
+# before importing local modules (Streamlit runs each page as __main__).
+per-file-ignores = { "dashboard/pages/*.py" = ["E402"], "run_api.py" = ["E402"], "models/xg/train_v2.py" = ["E402"], "models/pass_success/train_v2.py" = ["E402"] }
+
 [tool.pytest.ini_options]
 filterwarnings = [
     # mlflow ships Pydantic V1 validators — not fixable from here

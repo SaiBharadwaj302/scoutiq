@@ -26,9 +26,7 @@ warnings.filterwarnings("ignore")
 
 import mlflow
 import mlflow.sklearn
-import numpy as np
 import optuna
-import pandas as pd
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
@@ -201,9 +199,11 @@ def plot_calibration(y_val, probs, run_id: str) -> str:
     ax.set_xlabel("Mean predicted pass success prob")
     ax.set_ylabel("Actual completion rate")
     ax.set_title("Pass Success 3.0 — Calibration Curve")
-    ax.legend(); ax.grid(True, alpha=0.3)
+    ax.legend()
+    ax.grid(True, alpha=0.3)
     path = f"pass_calibration_{run_id[:8]}.png"
-    fig.savefig(path, dpi=100, bbox_inches="tight"); plt.close(fig)
+    fig.savefig(path, dpi=100, bbox_inches="tight")
+    plt.close(fig)
     return path
 
 
@@ -297,7 +297,8 @@ def train_pass_model_v2(
         })
 
         cal_path = plot_calibration(y_val, probs, run_id)
-        mlflow.log_artifact(cal_path); os.remove(cal_path)
+        mlflow.log_artifact(cal_path)
+        os.remove(cal_path)
 
         mlflow.log_param("features", ",".join(get_feature_names()))
 
@@ -337,7 +338,7 @@ if __name__ == "__main__":
     )
 
     print(f"\n{'='*50}")
-    print(f"Pass Success 3.0 Final Results")
+    print("Pass Success 3.0 Final Results")
     print(f"{'='*50}")
     print(f"AUC-ROC:       {results['auc_roc']:.4f}")
     print(f"Brier Score:   {results['brier_score']:.4f}")

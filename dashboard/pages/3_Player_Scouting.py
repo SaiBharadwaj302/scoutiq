@@ -4,13 +4,13 @@ dashboard/pages/3_Player_Scouting.py
 Player Scouting view:
   - Search for any player in the dataset
   - Show their per-90 stats
-  - Find top-5 most similar players (PCA cosine similarity)
+  - Find top-5 most similar players (deep metric learning + cosine similarity)
   - Radar chart comparing query player vs best match
   - Sortable comparison table
 """
-import sys; sys.path.insert(0, ".")
+import sys
+sys.path.insert(0, ".")
 
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import streamlit as st
@@ -21,7 +21,7 @@ st.set_page_config(page_title="Player Scouting · ScoutIQ", page_icon="🔍", la
 
 with st.sidebar:
     st.markdown("## 🔍 Player Scouting")
-    st.markdown("Find tactically similar players using PCA embeddings and cosine similarity.")
+    st.markdown("Find tactically similar players using deep metric learning embeddings and cosine similarity.")
 
 # ── Load player list ──────────────────────────────────────────────────────────
 try:
@@ -153,6 +153,8 @@ with col_table:
     st.markdown("**How similarity works**")
     st.markdown(
         "Player stats are aggregated per-90 minutes, normalised with StandardScaler, "
-        "then reduced to 32 dimensions via PCA. Cosine similarity in that space "
-        "reflects tactical and statistical profile similarity — not just raw output."
+        "then mapped to a 32-dimensional embedding by a PyTorch network trained with "
+        "triplet margin loss (same position_group = pulled together, different = pushed "
+        "apart). Cosine similarity in that space reflects tactical and statistical "
+        "profile similarity — not just raw output."
     )

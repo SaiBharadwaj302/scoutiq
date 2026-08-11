@@ -8,7 +8,7 @@ this is what keeps p99 latency under 15ms.
 import os
 import mlflow
 import mlflow.sklearn
-import numpy as np
+import mlflow.pytorch
 from loguru import logger
 from dotenv import load_dotenv
 
@@ -17,10 +17,12 @@ from models.similarity.query import load_embeddings
 load_dotenv()
 
 MLFLOW_URI = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")
+SIMILARITY_MODEL_NAME = "scoutiq_similarity_net"
 
 # ── Model Cache (loaded once at startup) ──────────────────────────────────────
 _xg_model    = None
 _pass_model  = None
+_similarity_model = None
 _embeddings  = None
 _player_ids  = None
 _player_names = None
@@ -67,10 +69,32 @@ def get_similarity_data():
     return _embeddings, _player_ids, _player_names
 
 
+def get_similarity_model():
+    """
+    Return the cached PyTorch deep metric learning model, loading if needed.
+    Only required for on-the-fly embedding of a raw feature vector that
+    hasn't been precomputed into player_per90_features yet.
+    """
+    global _similarity_model
+    if _similarity_model is None:
+        mlflow.set_tracking_uri(MLFLOW_URI)
+        try:
+            uri = f"models:/{SIMILARITY_MODEL_NAME}/latest"
+            _similarity_model = mlflow.pytorch.load_model(uri)
+            logger.info(f"Loaded model: {uri}")
+        except Exception as e:
+            logger.warning(f"Could not load latest — trying version 1: {e}")
+            uri = f"models:/{SIMILARITY_MODEL_NAME}/1"
+            _similarity_model = mlflow.pytorch.load_model(uri)
+            logger.info(f"Loaded model: {uri}")
+        _similarity_model.eval()
+    return _similarity_model
+
+
 def get_model_versions() -> dict[str, str]:
     """Return version info for all loaded models."""
     return {
         "xg_model":         "scoutiq_xg/1",
         "pass_model":       "scoutiq_pass/1",
-        "similarity_model": "pca_cosine_v1",
+        "similarity_model": f"{SIMILARITY_MODEL_NAME}/1",
     }

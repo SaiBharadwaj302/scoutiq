@@ -227,7 +227,7 @@ def ingest_players(max_matches: int | None = None) -> dict:
                     p_dict, a_dict = _parse_lineup_row(
                         prow, match_id, str(team_name), cid, sid, comp_name
                     )
-                    if p_dict is None:
+                    if p_dict is None or a_dict is None:
                         continue
 
                     pid = p_dict["player_id"]

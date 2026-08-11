@@ -5,7 +5,7 @@ Pydantic request/response models for all ScoutIQ endpoints.
 These define exactly what the API accepts and returns —
 invalid inputs are rejected automatically before hitting the model.
 """
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field
 from typing import Optional
 
 

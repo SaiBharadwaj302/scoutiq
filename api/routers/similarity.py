@@ -2,7 +2,8 @@
 api/routers/similarity.py
 
 GET /v1/players/similar/{player_id}
-Returns the top-N most similar players based on PCA embeddings.
+Returns the top-N most similar players based on deep metric learning
+embeddings (PyTorch triplet network, precomputed and L2-normalized).
 """
 from fastapi import APIRouter, Depends, HTTPException, Query
 
@@ -26,8 +27,9 @@ async def get_similar_players(
     """
     Find the most tactically similar players to a given player.
 
-    Uses PCA embeddings of per-90 stats and cosine similarity.
-    Useful for scouting transfer targets with a similar profile.
+    Uses deep metric learning embeddings (triplet loss) of per-90 stats
+    and cosine similarity. Useful for scouting transfer targets with a
+    similar profile.
 
     - **player_id**: StatsBomb player ID
     - **top_n**: number of results (1-20, default 5)

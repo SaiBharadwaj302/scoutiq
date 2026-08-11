@@ -8,11 +8,10 @@ MLOps Monitoring view:
   - Links to full Evidently HTML reports
   - Manual drift check trigger
 """
-import sys; sys.path.insert(0, ".")
+import sys
+sys.path.insert(0, ".")
 
-import json
 from pathlib import Path
-from datetime import datetime
 
 import pandas as pd
 import streamlit as st
@@ -150,7 +149,7 @@ st.subheader("Model Registry")
 if healthy:
     try:
         import requests
-        resp = requests.get(f"http://localhost:8000/health", timeout=3)
+        resp = requests.get("http://localhost:8000/health", timeout=3)
         if resp.ok:
             data = resp.json()
             models = data.get("models", {})
@@ -175,7 +174,7 @@ with st.expander("📐 MLOps Architecture"):
     - Models loaded from MLflow registry at startup (cached in-process)
     - `POST /v1/predict/xg` — xG prediction
     - `POST /v1/predict/pass` — pass success probability
-    - `GET /v1/players/similar/{id}` — PCA cosine similarity
+    - `GET /v1/players/similar/{id}` — deep metric learning cosine similarity
 
     **Monitoring** (Evidently AI):
     - `DatasetDriftMetric` — overall drift flag

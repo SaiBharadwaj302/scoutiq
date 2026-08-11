@@ -5,7 +5,6 @@ POST /v1/predict/pass
 Given a pass attempt, returns the completion probability.
 """
 import math
-import numpy as np
 import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 

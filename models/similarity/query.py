@@ -63,7 +63,7 @@ def find_similar(
     Returns:
         list of dicts with player_id, player_name, similarity score
     """
-    if embeddings is None:
+    if embeddings is None or player_ids is None or player_names is None:
         embeddings, player_ids, player_names = load_embeddings()
 
     if player_id not in player_ids:

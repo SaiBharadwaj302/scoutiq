@@ -14,12 +14,9 @@ Run directly:
 """
 import os
 import warnings
-warnings.filterwarnings("ignore")
 
 import mlflow
 import mlflow.sklearn
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from loguru import logger
 from sklearn.calibration import CalibratedClassifierCV, calibration_curve
@@ -33,6 +30,7 @@ from dotenv import load_dotenv
 
 from models.pass_success.features import load_training_data, get_feature_names
 
+warnings.filterwarnings("ignore")
 load_dotenv()
 
 MLFLOW_URI      = os.getenv("MLFLOW_TRACKING_URI", "file:./mlruns")

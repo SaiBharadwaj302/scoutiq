@@ -9,7 +9,7 @@ Run:
     streamlit run dashboard/Home.py
 """
 import streamlit as st
-from utils import get_matches, get_players, api_health, _query
+from utils import get_matches, api_health, _query
 
 st.set_page_config(
     page_title="ScoutIQ",
@@ -104,7 +104,7 @@ with nav2:
 with nav3:
     st.markdown("### 🔍 Player Scouting")
     st.markdown(
-        "Find tactically similar players using PCA embeddings + cosine "
+        "Find tactically similar players using deep metric learning embeddings + cosine "
         "similarity. Compare stats with a radar chart."
     )
 
@@ -145,7 +145,7 @@ with st.sidebar:
     st.markdown("**Models**")
     st.markdown("⚽ xG — Ensemble + Optuna")
     st.markdown("🎯 Pass Success — Ensemble + Optuna")
-    st.markdown("👤 Player Similarity — PCA 32-dim")
+    st.markdown("👤 Player Similarity — Deep Metric 32-dim")
     st.markdown("---")
     st.markdown("**Data**")
     st.markdown("StatsBomb Open Data")

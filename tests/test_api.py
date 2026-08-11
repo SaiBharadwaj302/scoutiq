@@ -4,7 +4,6 @@ tests/test_api.py
 FastAPI endpoint tests using TestClient.
 Models are mocked so no database or MLflow connection is needed.
 """
-import math
 from unittest.mock import MagicMock, patch
 
 import numpy as np

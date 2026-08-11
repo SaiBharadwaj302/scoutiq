@@ -2,8 +2,6 @@
 tests/test_ingest.py
 Unit tests for ingestion helpers — no DB required, pure logic.
 """
-import math
-import pytest
 from pipeline.ingest import (
     distance_to_goal,
     angle_to_goal,

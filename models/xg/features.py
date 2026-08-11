@@ -4,7 +4,6 @@ models/xg/features.py
 Feature engineering for the xG 2.0 model.
 Pulls from shot_features table and builds the final feature matrix.
 """
-import numpy as np
 import pandas as pd
 from loguru import logger
 

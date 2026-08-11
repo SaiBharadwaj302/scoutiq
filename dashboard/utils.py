@@ -16,8 +16,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from matplotlib.patches import Arc, FancyArrowPatch
+from matplotlib.patches import Arc
 import requests
 import streamlit as st
 from dotenv import load_dotenv
@@ -117,7 +116,7 @@ def get_similar_players(player_id: int, top_n: int = 5) -> pd.DataFrame:
         r.raise_for_status()
         data = r.json()
         return pd.DataFrame(data["similar_players"])
-    except Exception as e:
+    except Exception:
         # Fallback: cosine similarity directly in Python
         return _similarity_fallback(player_id, top_n)
 
@@ -171,11 +170,14 @@ def draw_pitch(ax: plt.Axes, half: str = "full") -> None:
     kw = dict(color=LINE_COLOR, linewidth=1.5)
 
     if half == "attack":
-        ax.set_xlim(60, 122); ax.set_ylim(-2, 82)
+        ax.set_xlim(60, 122)
+        ax.set_ylim(-2, 82)
     else:
-        ax.set_xlim(-2, 122); ax.set_ylim(-2, 82)
+        ax.set_xlim(-2, 122)
+        ax.set_ylim(-2, 82)
 
-    ax.set_aspect("equal"); ax.axis("off")
+    ax.set_aspect("equal")
+    ax.axis("off")
 
     # Pitch outline
     ax.plot([0,120,120,0,0], [0,0,80,80,0], **kw)
@@ -215,20 +217,28 @@ def draw_pitch(ax: plt.Axes, half: str = "full") -> None:
 def xg_color(xg: float) -> str:
     """Red-yellow-green gradient mapped to xG value."""
     xg = max(0, min(1, xg))
-    if xg < 0.1:   return "#4ade80"   # green
-    if xg < 0.2:   return "#a3e635"
-    if xg < 0.35:  return "#facc15"   # yellow
-    if xg < 0.5:   return "#fb923c"   # orange
+    if xg < 0.1:
+        return "#4ade80"   # green
+    if xg < 0.2:
+        return "#a3e635"
+    if xg < 0.35:
+        return "#facc15"   # yellow
+    if xg < 0.5:
+        return "#fb923c"   # orange
     return "#f87171"                   # red
 
 
 def risk_color(prob: float) -> str:
     """Green (safe) → Red (risky) for pass completion probability."""
     prob = max(0, min(1, prob))
-    if prob > 0.85: return "#22c55e"
-    if prob > 0.65: return "#84cc16"
-    if prob > 0.45: return "#eab308"
-    if prob > 0.25: return "#f97316"
+    if prob > 0.85:
+        return "#22c55e"
+    if prob > 0.65:
+        return "#84cc16"
+    if prob > 0.45:
+        return "#eab308"
+    if prob > 0.25:
+        return "#f97316"
     return "#ef4444"
 
 

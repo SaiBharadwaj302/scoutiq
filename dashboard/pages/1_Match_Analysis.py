@@ -7,7 +7,8 @@ Match Analysis view:
   - Cumulative xG timeline (both teams)
   - Per-team stat table
 """
-import sys; sys.path.insert(0, ".")
+import sys
+sys.path.insert(0, ".")
 
 import numpy as np
 import matplotlib.pyplot as plt

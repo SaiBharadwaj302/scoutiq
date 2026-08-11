@@ -7,13 +7,11 @@ Pass Heatmap view:
   - Zone heatmap of pass origins
   - Stats: completion rate by zone and pass type
 """
-import sys; sys.path.insert(0, ".")
+import sys
+sys.path.insert(0, ".")
 
-import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
-from matplotlib.patches import FancyArrowPatch
 import streamlit as st
 
 from utils import get_matches, get_passes_for_match, draw_pitch

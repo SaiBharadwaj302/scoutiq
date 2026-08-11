@@ -10,8 +10,6 @@ Run directly:
 import os
 import mlflow
 import mlflow.sklearn
-import numpy as np
-import pandas as pd
 import matplotlib.pyplot as plt
 from loguru import logger
 from sklearn.metrics import (
