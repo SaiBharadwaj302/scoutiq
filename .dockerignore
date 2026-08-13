@@ -1,0 +1,37 @@
+# Local dev environment — never belongs in the image (this is what was
+# silently ballooning the API image to ~6GB despite requirements-api.txt
+# trimming the installed packages: `COPY . .` was shipping the whole local
+# venv, including torch/catboost/xgboost/optuna, straight into the build).
+venv/
+.venv/
+
+# Version control
+.git/
+.github/
+
+# MLflow artifacts — models are loaded from the registry at runtime, not
+# baked into the image
+mlruns/
+
+# Large local data clones — not needed by the serving API
+data/statsbomb/
+
+# Generated / cache
+__pycache__/
+**/__pycache__/
+*.pyc
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+reports/
+
+# Secrets — never bake into an image
+.env
+
+# Editor / misc
+.vscode/
+.idea/
+*.docx
+*.zip
+install_log.txt
+notebooks/.ipynb_checkpoints/

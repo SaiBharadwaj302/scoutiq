@@ -8,7 +8,6 @@ this is what keeps p99 latency under 15ms.
 import os
 import mlflow
 import mlflow.sklearn
-import mlflow.pytorch
 from loguru import logger
 from dotenv import load_dotenv
 
@@ -77,6 +76,11 @@ def get_similarity_model():
     """
     global _similarity_model
     if _similarity_model is None:
+        # Lazy import: torch/mlflow.pytorch are only needed for this one
+        # on-the-fly embedding path, not for the xG/pass/similarity-lookup
+        # endpoints — keeps the base API deployable without a ~2GB torch
+        # install on memory-constrained hosts.
+        import mlflow.pytorch
         mlflow.set_tracking_uri(MLFLOW_URI)
         try:
             uri = f"models:/{SIMILARITY_MODEL_NAME}/latest"

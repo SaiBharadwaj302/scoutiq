@@ -1,0 +1,34 @@
+# Minimal runtime dependencies for serving the FastAPI app (api/main.py).
+#
+# This is deliberately a subset of requirements.txt: the full file also
+# pulls in the training/experimentation stack (torch, catboost, xgboost,
+# optuna, shap, statsbombpy, prefect, evidently, pytest, ruff, mypy) which
+# the live API never imports at request time. Installing all of that on a
+# memory-constrained host (e.g. a free-tier t2.micro/t3.micro EC2 instance)
+# risks the pip install itself getting OOM-killed before it finishes.
+#
+# Keep this file's versions in sync with requirements.txt for any package
+# listed in both.
+
+# API
+fastapi==0.111.0
+uvicorn[standard]==0.30.1
+pydantic==2.7.4
+
+# Model loading + inference (the xG/pass models are LightGBM wrapped in
+# sklearn Stacking/Calibration classifiers, loaded via mlflow.sklearn)
+mlflow==2.14.1
+scikit-learn==1.5.1
+lightgbm==4.4.0
+
+# Data
+pandas==2.2.2
+numpy==1.26.4
+
+# Database
+psycopg2-binary==2.9.9
+sqlalchemy==2.0.31
+
+# Utils
+python-dotenv==1.0.1
+loguru==0.7.2
