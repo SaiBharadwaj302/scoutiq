@@ -21,16 +21,17 @@ import plotly.graph_objects as go
 # dashboard reads as one system instead of three mismatched chart libraries.
 BG          = "#0b1120"   # app background
 SURFACE     = "#141b2d"   # card / pitch-card surface
-SURFACE_2   = "#1b2436"   # slightly lighter surface (hover, alt rows)
 BORDER      = "#293347"
 TEXT        = "#e2e8f0"
 TEXT_MUTED  = "#94a3b8"
 ACCENT      = "#22c55e"   # emerald — brand / pitch green
 ACCENT_SOFT = "#16a34a"
+ACCENT_2    = "#22d3ee"   # cyan — secondary accent for gradients/glow
 INFO        = "#38bdf8"
 WARNING     = "#f59e0b"
 DANGER      = "#ef4444"
-PITCH_GREEN = "#0f3d24"
+PITCH_DARK  = "#146334"
+PITCH_LIGHT = "#1a7a41"
 
 # ── Page Config ───────────────────────────────────────────────────────────────
 st.set_page_config(
@@ -44,7 +45,7 @@ st.set_page_config(
 def inject_css():
     st.markdown(f"""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
 
     html, body, [class*="css"] {{
         font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
@@ -60,122 +61,227 @@ def inject_css():
         max-width: 1200px;
     }}
 
-    /* ── Hero banner ─────────────────────────────────────────────────────── */
+    /* ── Animated mesh background ────────────────────────────────────────── */
+    @keyframes drift {{
+        0%   {{ background-position: 0% 0%, 100% 100%, 0 0; }}
+        50%  {{ background-position: 100% 40%, 10% 60%, 0 0; }}
+        100% {{ background-position: 0% 0%, 100% 100%, 0 0; }}
+    }}
+    .stApp {{
+        background:
+            radial-gradient(circle at 15% 20%, rgba(34,197,94,0.14) 0%, transparent 42%),
+            radial-gradient(circle at 85% 75%, rgba(34,211,238,0.12) 0%, transparent 42%),
+            {BG};
+        background-size: 180% 180%, 180% 180%, 100% 100%;
+        animation: drift 26s ease-in-out infinite;
+    }}
+
+    @keyframes fadeInUp {{
+        from {{ opacity: 0; transform: translateY(14px); }}
+        to   {{ opacity: 1; transform: translateY(0); }}
+    }}
+    @keyframes pulseDot {{
+        0%, 100% {{ box-shadow: 0 0 0 0 rgba(34,197,94,0.55); }}
+        50%      {{ box-shadow: 0 0 0 7px rgba(34,197,94,0); }}
+    }}
+    @keyframes shimmer {{
+        0%   {{ background-position: -200% 0; }}
+        100% {{ background-position: 200% 0; }}
+    }}
+
+    /* ── Hero banner — glass panel, gradient text, glow blobs ────────────── */
     .scoutiq-hero {{
-        background: linear-gradient(135deg, {SURFACE} 0%, {BG} 100%);
-        border: 1px solid {BORDER};
-        border-radius: 16px;
-        padding: 28px 32px;
-        margin-bottom: 24px;
+        background: rgba(20,27,45,0.55);
+        backdrop-filter: blur(18px);
+        -webkit-backdrop-filter: blur(18px);
+        border: 1px solid rgba(255,255,255,0.08);
+        border-radius: 20px;
+        padding: 32px 36px;
+        margin-bottom: 26px;
         position: relative;
         overflow: hidden;
+        box-shadow: 0 8px 32px rgba(0,0,0,0.35);
+        animation: fadeInUp 0.5s ease both;
     }}
     .scoutiq-hero::before {{
         content: "";
-        position: absolute;
-        top: -40%; right: -8%;
-        width: 320px; height: 320px;
-        background: radial-gradient(circle, rgba(34,197,94,0.18) 0%, transparent 70%);
+        position: absolute; top: -50%; right: -10%;
+        width: 340px; height: 340px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(34,197,94,0.22) 0%, transparent 70%);
+        pointer-events: none;
+    }}
+    .scoutiq-hero::after {{
+        content: "";
+        position: absolute; bottom: -60%; left: -5%;
+        width: 280px; height: 280px; border-radius: 50%;
+        background: radial-gradient(circle, rgba(34,211,238,0.16) 0%, transparent 70%);
         pointer-events: none;
     }}
     .scoutiq-hero h1 {{
-        font-size: 1.9rem;
-        font-weight: 800;
-        margin: 0 0 6px 0;
-        color: {TEXT};
+        font-size: 2.1rem;
+        font-weight: 900;
+        margin: 0 0 8px 0;
         letter-spacing: -0.02em;
+        background: linear-gradient(90deg, #ffffff 10%, {ACCENT} 55%, {ACCENT_2} 100%);
+        -webkit-background-clip: text; background-clip: text; color: transparent;
+        position: relative; z-index: 1;
     }}
     .scoutiq-hero p {{
         font-size: 1rem;
         color: {TEXT_MUTED};
         margin: 0;
         max-width: 640px;
+        position: relative; z-index: 1;
+    }}
+    .hero-pills {{ margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; position: relative; z-index: 1; }}
+    .hero-pill {{
+        background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12);
+        padding: 5px 13px; border-radius: 999px; font-size: 0.75rem;
+        color: {TEXT_MUTED}; font-weight: 500;
     }}
 
     /* ── Sidebar branding ────────────────────────────────────────────────── */
+    section[data-testid="stSidebar"] {{
+        background: linear-gradient(180deg, rgba(11,17,32,0.99), rgba(11,17,32,0.94));
+        border-right: 1px solid rgba(255,255,255,0.06);
+    }}
     .sidebar-brand {{
         display: flex; align-items: center; gap: 10px;
-        padding: 4px 0 14px 0;
+        padding: 4px 0 6px 0;
     }}
     .sidebar-brand .badge {{
-        width: 40px; height: 40px; border-radius: 10px;
-        background: linear-gradient(135deg, {ACCENT} 0%, {ACCENT_SOFT} 100%);
+        width: 42px; height: 42px; border-radius: 12px;
+        background: linear-gradient(135deg, {ACCENT} 0%, {ACCENT_2} 100%);
         display: flex; align-items: center; justify-content: center;
-        font-size: 20px;
-        box-shadow: 0 4px 14px rgba(34,197,94,0.35);
+        font-size: 21px;
+        box-shadow: 0 4px 18px rgba(34,197,94,0.4);
     }}
-    .sidebar-brand .name {{ font-weight: 800; font-size: 1.15rem; color: {TEXT}; line-height: 1.1; }}
-    .sidebar-brand .tag {{ font-size: 0.72rem; color: {TEXT_MUTED}; text-transform: uppercase; letter-spacing: 0.06em; }}
+    .sidebar-brand .name {{ font-weight: 800; font-size: 1.18rem; color: {TEXT}; line-height: 1.1; }}
+    .sidebar-brand .tag {{
+        font-size: 0.68rem; color: {TEXT_MUTED}; text-transform: uppercase;
+        letter-spacing: 0.06em; display: flex; align-items: center; gap: 5px;
+    }}
+    .live-dot {{
+        width: 6px; height: 6px; border-radius: 50%;
+        background: {ACCENT}; display: inline-block;
+        animation: pulseDot 2s infinite;
+    }}
 
     .model-chip {{
         display: flex; align-items: center; justify-content: space-between;
-        background: {SURFACE}; border: 1px solid {BORDER}; border-radius: 10px;
+        background: rgba(255,255,255,0.03);
+        border: 1px solid {BORDER}; border-radius: 10px;
         padding: 9px 12px; margin-bottom: 8px; font-size: 0.82rem;
+        transition: border-color 0.2s ease, background 0.2s ease;
     }}
+    .model-chip:hover {{ border-color: rgba(34,197,94,0.4); background: rgba(34,197,94,0.06); }}
     .model-chip .dot {{
         width: 7px; height: 7px; border-radius: 50%;
         background: {ACCENT}; display: inline-block; margin-right: 8px;
-        box-shadow: 0 0 6px {ACCENT};
+        animation: pulseDot 2.4s infinite;
     }}
     .model-chip .label {{ color: {TEXT_MUTED}; }}
     .model-chip .val {{ color: {ACCENT}; font-weight: 700; }}
 
-    /* ── Metric cards (restyle native st.metric) ─────────────────────────── */
-    [data-testid="stMetric"] {{
-        background: {SURFACE};
-        border: 1px solid {BORDER};
-        border-top: 3px solid {ACCENT};
-        border-radius: 12px;
-        padding: 14px 16px 10px 16px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.25);
-    }}
-    [data-testid="stMetricLabel"] {{
-        color: {TEXT_MUTED} !important; font-size: 0.78rem !important;
-        text-transform: uppercase; letter-spacing: 0.04em;
-    }}
-    [data-testid="stMetricValue"] {{ color: {TEXT} !important; font-weight: 800 !important; }}
-
-    /* ── Verdict banners (replace st.success/info/warning walls of color) ─── */
-    .verdict {{
-        border-radius: 12px; padding: 14px 18px; margin-top: 10px;
-        font-size: 0.95rem; border: 1px solid; line-height: 1.5;
-    }}
-    .verdict-good {{ background: rgba(34,197,94,0.10);  border-color: rgba(34,197,94,0.35);  color: #86efac; }}
-    .verdict-mid  {{ background: rgba(56,189,248,0.10);  border-color: rgba(56,189,248,0.35); color: #7dd3fc; }}
-    .verdict-bad  {{ background: rgba(239,68,68,0.10);  border-color: rgba(239,68,68,0.35);  color: #fca5a5; }}
-
-    /* ── Sidebar nav ─────────────────────────────────────────────────────── */
-    section[data-testid="stSidebar"] {{
-        background: {BG};
-        border-right: 1px solid {BORDER};
-    }}
     section[data-testid="stSidebar"] [role="radiogroup"] label {{
-        border-radius: 10px; padding: 8px 12px !important; margin-bottom: 4px;
-        transition: background 0.15s ease;
+        border-radius: 12px; padding: 9px 14px !important; margin-bottom: 5px;
+        border: 1px solid transparent;
+        transition: all 0.2s ease;
     }}
     section[data-testid="stSidebar"] [role="radiogroup"] label:hover {{
-        background: {SURFACE};
+        background: rgba(34,197,94,0.08);
+        border-color: rgba(34,197,94,0.25);
     }}
 
-    /* ── Bordered containers as cards ────────────────────────────────────── */
+    /* ── Bordered containers → glass cards with hover lift ───────────────── */
     div[data-testid="stVerticalBlockBorderWrapper"] {{
-        border-radius: 14px !important;
-        border-color: {BORDER} !important;
-        background: {SURFACE};
+        border-radius: 18px !important;
+        border-color: rgba(255,255,255,0.08) !important;
+        background: rgba(20,27,45,0.55) !important;
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        box-shadow: 0 4px 24px rgba(0,0,0,0.22);
+        transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+    }}
+    div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
+        box-shadow: 0 10px 34px rgba(34,197,94,0.14);
+        border-color: rgba(34,197,94,0.25) !important;
     }}
 
-    h2, h3 {{ color: {TEXT}; font-weight: 700; }}
+    /* ── Metric cards ──────────────────────────────────────────────────── */
+    [data-testid="stMetric"] {{
+        background: linear-gradient(160deg, rgba(30,41,59,0.85), rgba(20,27,45,0.85));
+        border: 1px solid {BORDER};
+        border-top: 3px solid {ACCENT};
+        border-radius: 14px;
+        padding: 15px 18px 11px 18px;
+        box-shadow: 0 4px 18px rgba(0,0,0,0.28);
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }}
+    [data-testid="stMetric"]:hover {{
+        transform: translateY(-3px);
+        box-shadow: 0 12px 30px rgba(34,197,94,0.18);
+    }}
+    [data-testid="stMetricLabel"] {{
+        color: {TEXT_MUTED} !important; font-size: 0.76rem !important;
+        text-transform: uppercase; letter-spacing: 0.05em;
+    }}
+    [data-testid="stMetricValue"] {{
+        background: linear-gradient(90deg, #ffffff, {ACCENT});
+        -webkit-background-clip: text; background-clip: text; color: transparent !important;
+        font-weight: 800 !important;
+    }}
+
+    /* ── Verdict banners ──────────────────────────────────────────────────── */
+    .verdict {{
+        border-radius: 14px; padding: 16px 20px; margin-top: 12px;
+        font-size: 0.95rem; line-height: 1.6; border-left: 4px solid;
+        backdrop-filter: blur(10px); animation: fadeInUp 0.4s ease both;
+    }}
+    .verdict-good {{ background: rgba(34,197,94,0.09); border-color: {ACCENT}; color: #86efac; box-shadow: 0 4px 22px rgba(34,197,94,0.08); }}
+    .verdict-mid  {{ background: rgba(56,189,248,0.09); border-color: {INFO};   color: #7dd3fc; box-shadow: 0 4px 22px rgba(56,189,248,0.08); }}
+    .verdict-bad  {{ background: rgba(239,68,68,0.09);  border-color: {DANGER}; color: #fca5a5; box-shadow: 0 4px 22px rgba(239,68,68,0.08); }}
+
+    /* ── Inputs ────────────────────────────────────────────────────────── */
+    [data-testid="stSlider"] [role="slider"] {{
+        box-shadow: 0 0 0 6px rgba(34,197,94,0.16) !important;
+    }}
+    [data-baseweb="select"] > div {{
+        background: rgba(30,41,59,0.6) !important;
+        border-color: {BORDER} !important;
+        border-radius: 10px !important;
+    }}
+
+    /* ── Section headers ──────────────────────────────────────────────────── */
+    h2, h3 {{
+        color: {TEXT}; font-weight: 700;
+        border-left: 3px solid {ACCENT}; padding-left: 10px;
+    }}
     hr {{ border-color: {BORDER}; }}
+
+    /* ── Scrollbar ─────────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar {{ width: 10px; height: 10px; }}
+    ::-webkit-scrollbar-track {{ background: {BG}; }}
+    ::-webkit-scrollbar-thumb {{
+        background: linear-gradient(180deg, {ACCENT}, {ACCENT_SOFT});
+        border-radius: 10px;
+    }}
+    ::-webkit-scrollbar-thumb:hover {{ background: {ACCENT_2}; }}
     </style>
     """, unsafe_allow_html=True)
 
 
-def hero(title: str, subtitle: str):
-    """Static gradient banner — safe to render as raw HTML (no widgets inside)."""
+def hero(title: str, subtitle: str, pills=None):
+    """Static gradient/glass banner — safe to render as raw HTML (no widgets inside)."""
+    pills_html = ""
+    if pills:
+        chips = "".join(f'<span class="hero-pill">{p}</span>' for p in pills)
+        pills_html = f'<div class="hero-pills">{chips}</div>'
     st.markdown(f"""
     <div class="scoutiq-hero">
         <h1>{title}</h1>
         <p>{subtitle}</p>
+        {pills_html}
     </div>
     """, unsafe_allow_html=True)
 
@@ -215,46 +321,51 @@ def load_player_list():
 
 # ── Pitch Drawing ─────────────────────────────────────────────────────────────
 
-def draw_pitch(ax, color=PITCH_GREEN, linecolor="#e2e8f0"):
-    """Draw a StatsBomb pitch (120 x 80)."""
-    ax.set_facecolor(color)
+def draw_pitch(ax, linecolor="#f8fafc"):
+    """Draw a StatsBomb pitch (120 x 80) with a broadcast-style mown-stripe turf."""
     ax.set_xlim(0, 120)
     ax.set_ylim(0, 80)
     ax.set_aspect("equal")
     ax.axis("off")
 
-    lc = linecolor
-    lw = 1.5
-    alpha = 0.85
+    n_stripes = 12
+    stripe_w = 120 / n_stripes
+    for i in range(n_stripes):
+        shade = PITCH_DARK if i % 2 == 0 else PITCH_LIGHT
+        ax.add_patch(patches.Rectangle((i * stripe_w, 0), stripe_w, 80,
+                     facecolor=shade, edgecolor="none", zorder=0))
 
-    # Pitch outline
+    lc, lw, alpha = linecolor, 1.6, 0.9
+
     ax.add_patch(patches.Rectangle((0, 0), 120, 80,
-                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha))
-    # Halfway line
-    ax.plot([60, 60], [0, 80], color=lc, linewidth=lw, alpha=alpha)
-    # Centre circle
-    centre = plt.Circle((60, 40), 10, fill=False, color=lc, linewidth=lw, alpha=alpha)
+                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
+    ax.plot([60, 60], [0, 80], color=lc, linewidth=lw, alpha=alpha, zorder=1)
+    centre = plt.Circle((60, 40), 10, fill=False, color=lc, linewidth=lw, alpha=alpha, zorder=1)
     ax.add_patch(centre)
-    ax.plot(60, 40, "o", color=lc, markersize=3, alpha=alpha)
+    ax.plot(60, 40, "o", color=lc, markersize=3, alpha=alpha, zorder=1)
 
-    # Penalty boxes
     ax.add_patch(patches.Rectangle((0, 18), 18, 44,
-                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha))
+                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
     ax.add_patch(patches.Rectangle((102, 18), 18, 44,
-                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha))
-    # Six yard boxes
+                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
     ax.add_patch(patches.Rectangle((0, 30), 6, 20,
-                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha))
+                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
     ax.add_patch(patches.Rectangle((114, 30), 6, 20,
-                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha))
-    # Goals
+                 fill=False, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
     ax.add_patch(patches.Rectangle((-2, 36), 2, 8,
-                 fill=True, facecolor=lc, edgecolor=lc, linewidth=lw, alpha=alpha))
+                 fill=True, facecolor=lc, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
     ax.add_patch(patches.Rectangle((120, 36), 2, 8,
-                 fill=True, facecolor=lc, edgecolor=lc, linewidth=lw, alpha=alpha))
-    # Penalty spots
-    ax.plot(12, 40, "o", color=lc, markersize=3, alpha=alpha)
-    ax.plot(108, 40, "o", color=lc, markersize=3, alpha=alpha)
+                 fill=True, facecolor=lc, edgecolor=lc, linewidth=lw, alpha=alpha, zorder=1))
+    ax.plot(12, 40, "o", color=lc, markersize=3, alpha=alpha, zorder=1)
+    ax.plot(108, 40, "o", color=lc, markersize=3, alpha=alpha, zorder=1)
+
+
+def glow_marker(ax, x, y, color, size=18, zorder=5):
+    """Layered translucent circles behind a crisp top marker for a soft neon glow."""
+    for mult, a in [(2.6, 0.10), (1.9, 0.16), (1.3, 0.28)]:
+        ax.plot(x, y, "o", color=color, markersize=size * mult, alpha=a, zorder=zorder - 1)
+    ax.plot(x, y, "o", color=color, markersize=size, alpha=0.95, zorder=zorder)
+    ax.plot(x, y, "o", color="white", markersize=size * 0.32, zorder=zorder + 1)
 
 
 def xg_color(xg: float) -> str:
@@ -342,7 +453,7 @@ def main():
         <div class="badge">⚽</div>
         <div>
             <div class="name">ScoutIQ</div>
-            <div class="tag">Football Analytics</div>
+            <div class="tag"><span class="live-dot"></span> Football Analytics — Live</div>
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -381,7 +492,8 @@ def main():
     # ── xG PAGE ──────────────────────────────────────────────────────────────
     if page == "🎯 xG Predictor":
         hero("🎯 Expected Goals (xG) Predictor",
-             "Place a shot on the pitch and get the model's goal probability instantly.")
+             "Place a shot on the pitch and get the model's goal probability instantly.",
+             pills=["⚡ Real-time inference", "🌲 LightGBM + Logistic stacking", "📊 AUC 0.808"])
 
         col1, col2 = st.columns([1, 1])
 
@@ -409,19 +521,15 @@ def main():
                                     body_part, play_pattern, under_pressure,
                                     first_time, period)
                     color = xg_color(xg)
-                    ax.plot(loc_x, loc_y, "o", color=color,
-                            markersize=18, alpha=0.9, zorder=5)
-                    ax.plot(loc_x, loc_y, "o", color="white",
-                            markersize=6, zorder=6)
-                    # Arrow to goal
+                    glow_marker(ax, loc_x, loc_y, color, size=16)
                     ax.annotate("", xy=(120, 40), xytext=(loc_x, loc_y),
                         arrowprops=dict(arrowstyle="->", color="white",
-                                        lw=1.5, alpha=0.5))
-                    ax.text(loc_x - 2, loc_y + 3,
+                                        lw=1.5, alpha=0.55))
+                    ax.text(loc_x - 2, loc_y + 4,
                             f"xG = {xg:.3f}", color="white",
                             fontsize=11, fontweight="bold",
                             bbox=dict(boxstyle="round,pad=0.35",
-                                      facecolor=color, edgecolor="none", alpha=0.9))
+                                      facecolor=color, edgecolor="none", alpha=0.92))
 
                 st.pyplot(fig, use_container_width=True)
                 plt.close(fig)
@@ -448,7 +556,8 @@ def main():
     # ── PASS PAGE ─────────────────────────────────────────────────────────────
     elif page == "🔄 Pass Analyzer":
         hero("🔄 Pass Success Analyzer",
-             "Define a pass and see the model's predicted completion probability.")
+             "Define a pass and see the model's predicted completion probability.",
+             pills=["⚡ Real-time inference", "🌲 LightGBM + Platt scaling", "📊 AUC 0.905"])
 
         col1, col2 = st.columns([1, 1])
 
@@ -481,11 +590,12 @@ def main():
                                         is_cross, is_switch, period)
                     color = ACCENT if prob > 0.7 else WARNING if prob > 0.5 else DANGER
 
-                    # Draw pass line
                     ax.annotate("", xy=(ex, ey), xytext=(sx, sy),
-                        arrowprops=dict(arrowstyle="->", color=color, lw=2.5))
-                    ax.plot(sx, sy, "o", color="white", markersize=10, zorder=5)
-                    ax.plot(ex, ey, "D", color=color, markersize=10, zorder=5)
+                        arrowprops=dict(arrowstyle="->", color=color, lw=2.8,
+                                        alpha=0.95))
+                    glow_marker(ax, sx, sy, "white", size=11)
+                    ax.plot(ex, ey, "D", color=color, markersize=11, zorder=6,
+                            markeredgecolor="white", markeredgewidth=1.2)
 
                     mid_x = (sx + ex) / 2
                     mid_y = (sy + ey) / 2
@@ -493,7 +603,7 @@ def main():
                             f"{prob*100:.0f}%", color="white",
                             fontsize=11, fontweight="bold", ha="center",
                             bbox=dict(boxstyle="round,pad=0.35",
-                                      facecolor=color, edgecolor="none", alpha=0.9))
+                                      facecolor=color, edgecolor="none", alpha=0.92))
 
                 st.pyplot(fig, use_container_width=True)
                 plt.close(fig)
@@ -517,7 +627,8 @@ def main():
     # ── SIMILARITY PAGE ───────────────────────────────────────────────────────
     elif page == "🔍 Player Similarity":
         hero("🔍 Player Similarity Engine",
-             "Find tactically similar players using PCA embeddings and cosine similarity.")
+             "Find tactically similar players using PCA embeddings and cosine similarity.",
+             pills=["🧬 32-dim PCA embeddings", "📐 Cosine similarity", "👥 5,653 players"])
 
         try:
             players_df = load_player_list()
@@ -535,7 +646,6 @@ def main():
                 top_n = st.slider("Number of similar players", 3, 15, 5)
                 st.markdown("---")
 
-                # Show selected player stats
                 sel_row = players_df[players_df["player_name"] == selected_name]
                 if not sel_row.empty:
                     row = sel_row.iloc[0]
@@ -565,8 +675,6 @@ def main():
                             results_df = pd.DataFrame(results)
                             results_df["similarity_pct"] = (results_df["similarity"] * 100).round(1)
                             results_df = results_df[results_df["player_name"].astype(str) != "0.0"]
-                            # Ascending so the highest-similarity player sits at the top
-                            # of a horizontal bar chart (Plotly draws bottom-up).
                             results_df = results_df.sort_values("similarity_pct")
 
                             fig = go.Figure(go.Bar(
@@ -576,7 +684,7 @@ def main():
                                 marker=dict(
                                     color=results_df["similarity_pct"],
                                     colorscale=[[0, "#4ade80"], [1, "#15803d"]],
-                                    line=dict(width=0),
+                                    line=dict(width=1, color="rgba(255,255,255,0.15)"),
                                 ),
                                 text=[f"{v:.1f}%" for v in results_df["similarity_pct"]],
                                 textposition="outside",
@@ -584,8 +692,8 @@ def main():
                                 hovertemplate="<b>%{y}</b><br>Similarity: %{x:.1f}%<extra></extra>",
                             ))
                             fig.update_layout(
-                                paper_bgcolor=SURFACE,
-                                plot_bgcolor=SURFACE,
+                                paper_bgcolor="rgba(0,0,0,0)",
+                                plot_bgcolor="rgba(0,0,0,0)",
                                 font=dict(color=TEXT, family="Inter, sans-serif"),
                                 title=dict(text=f"Players most similar to {selected_name}",
                                            font=dict(size=15, color=TEXT)),
@@ -598,7 +706,6 @@ def main():
                             )
                             st.plotly_chart(fig, use_container_width=True)
 
-                            # Table
                             st.dataframe(
                                 results_df.sort_values("similarity_pct", ascending=False)
                                     [["player_name", "similarity_pct"]].rename(
