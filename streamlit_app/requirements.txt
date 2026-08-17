@@ -1,0 +1,14 @@
+# Streamlit Community Cloud reads the requirements.txt in the same
+# directory as the main script (this one), not the repo root's — which
+# deliberately stays the full training/CI stack (torch, catboost, xgboost,
+# optuna...). This app never trains anything; it only loads two frozen
+# models and a static parquet file.
+streamlit==1.36.0
+pandas==2.2.2
+numpy==1.26.4
+scikit-learn==1.5.1
+lightgbm==4.4.0
+matplotlib==3.11.1
+plotly==5.22.0
+joblib==1.5.3
+pyarrow==15.0.2
