@@ -72,24 +72,13 @@ def inject_css():
         max-width: 1200px;
     }}
 
-    @keyframes drift {{
-        0%   {{ background-position: 0% 0%, 100% 100%, 0 0; }}
-        50%  {{ background-position: 100% 40%, 10% 60%, 0 0; }}
-        100% {{ background-position: 0% 0%, 100% 100%, 0 0; }}
-    }}
     .stApp {{
         background:
             radial-gradient(circle at 15% 20%, rgba(34,197,94,0.14) 0%, transparent 42%),
             radial-gradient(circle at 85% 75%, rgba(34,211,238,0.12) 0%, transparent 42%),
             {BG};
-        background-size: 180% 180%, 180% 180%, 100% 100%;
-        animation: drift 26s ease-in-out infinite;
     }}
 
-    @keyframes fadeInUp {{
-        from {{ opacity: 0; transform: translateY(14px); }}
-        to   {{ opacity: 1; transform: translateY(0); }}
-    }}
     @keyframes pulseDot {{
         0%, 100% {{ box-shadow: 0 0 0 0 rgba(34,197,94,0.55); }}
         50%      {{ box-shadow: 0 0 0 7px rgba(34,197,94,0); }}
@@ -106,7 +95,6 @@ def inject_css():
         position: relative;
         overflow: hidden;
         box-shadow: 0 8px 32px rgba(0,0,0,0.35);
-        animation: fadeInUp 0.5s ease both;
     }}
     .scoutiq-hero::before {{
         content: "";
@@ -220,7 +208,7 @@ def inject_css():
     .verdict {{
         border-radius: 14px; padding: 16px 20px; margin-top: 12px;
         font-size: 0.95rem; line-height: 1.6; border-left: 4px solid;
-        backdrop-filter: blur(10px); animation: fadeInUp 0.4s ease both;
+        backdrop-filter: blur(10px);
     }}
     .verdict-good {{ background: rgba(34,197,94,0.09); border-color: {ACCENT}; color: #86efac; box-shadow: 0 4px 22px rgba(34,197,94,0.08); }}
     .verdict-mid  {{ background: rgba(56,189,248,0.09); border-color: {INFO};   color: #7dd3fc; box-shadow: 0 4px 22px rgba(56,189,248,0.08); }}
