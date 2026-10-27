@@ -32,3 +32,8 @@ sqlalchemy==2.0.31
 # Utils
 python-dotenv==1.0.1
 loguru==0.7.2
+
+# Dashboard (app.py) — same image runs the `dashboard` compose service
+streamlit==1.36.0
+matplotlib==3.10.8
+plotly==5.22.0

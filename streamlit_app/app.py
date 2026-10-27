@@ -79,15 +79,9 @@ def inject_css():
             {BG};
     }}
 
-    @keyframes pulseDot {{
-        0%, 100% {{ box-shadow: 0 0 0 0 rgba(34,197,94,0.55); }}
-        50%      {{ box-shadow: 0 0 0 7px rgba(34,197,94,0); }}
-    }}
 
     .scoutiq-hero {{
         background: rgba(20,27,45,0.55);
-        backdrop-filter: blur(18px);
-        -webkit-backdrop-filter: blur(18px);
         border: 1px solid rgba(255,255,255,0.08);
         border-radius: 20px;
         padding: 32px 36px;
@@ -146,7 +140,7 @@ def inject_css():
     }}
     .live-dot {{
         width: 6px; height: 6px; border-radius: 50%;
-        background: {ACCENT}; display: inline-block; animation: pulseDot 2s infinite;
+        background: {ACCENT}; display: inline-block;
     }}
 
     .model-chip {{
@@ -159,14 +153,13 @@ def inject_css():
     .model-chip .dot {{
         width: 7px; height: 7px; border-radius: 50%;
         background: {ACCENT}; display: inline-block; margin-right: 8px;
-        animation: pulseDot 2.4s infinite;
     }}
     .model-chip .label {{ color: {TEXT_MUTED}; }}
     .model-chip .val {{ color: {ACCENT}; font-weight: 700; }}
 
     section[data-testid="stSidebar"] [role="radiogroup"] label {{
         border-radius: 12px; padding: 9px 14px !important; margin-bottom: 5px;
-        border: 1px solid transparent; transition: all 0.2s ease;
+        border: 1px solid transparent; transition: background 0.2s ease, border-color 0.2s ease;
     }}
     section[data-testid="stSidebar"] [role="radiogroup"] label:hover {{
         background: rgba(34,197,94,0.08); border-color: rgba(34,197,94,0.25);
@@ -176,10 +169,8 @@ def inject_css():
         border-radius: 18px !important;
         border-color: rgba(255,255,255,0.08) !important;
         background: rgba(20,27,45,0.55) !important;
-        backdrop-filter: blur(14px);
-        -webkit-backdrop-filter: blur(14px);
         box-shadow: 0 4px 24px rgba(0,0,0,0.22);
-        transition: box-shadow 0.25s ease, transform 0.25s ease, border-color 0.25s ease;
+        transition: box-shadow 0.25s ease, border-color 0.25s ease;
     }}
     div[data-testid="stVerticalBlockBorderWrapper"]:hover {{
         box-shadow: 0 10px 34px rgba(34,197,94,0.14);
@@ -190,10 +181,10 @@ def inject_css():
         background: linear-gradient(160deg, rgba(30,41,59,0.85), rgba(20,27,45,0.85));
         border: 1px solid {BORDER}; border-top: 3px solid {ACCENT}; border-radius: 14px;
         padding: 15px 18px 11px 18px; box-shadow: 0 4px 18px rgba(0,0,0,0.28);
-        transition: transform 0.2s ease, box-shadow 0.2s ease;
+        transition: box-shadow 0.2s ease;
     }}
     [data-testid="stMetric"]:hover {{
-        transform: translateY(-3px); box-shadow: 0 12px 30px rgba(34,197,94,0.18);
+        box-shadow: 0 12px 30px rgba(34,197,94,0.18);
     }}
     [data-testid="stMetricLabel"] {{
         color: {TEXT_MUTED} !important; font-size: 0.76rem !important;
@@ -208,7 +199,6 @@ def inject_css():
     .verdict {{
         border-radius: 14px; padding: 16px 20px; margin-top: 12px;
         font-size: 0.95rem; line-height: 1.6; border-left: 4px solid;
-        backdrop-filter: blur(10px);
     }}
     .verdict-good {{ background: rgba(34,197,94,0.09); border-color: {ACCENT}; color: #86efac; box-shadow: 0 4px 22px rgba(34,197,94,0.08); }}
     .verdict-mid  {{ background: rgba(56,189,248,0.09); border-color: {INFO};   color: #7dd3fc; box-shadow: 0 4px 22px rgba(56,189,248,0.08); }}
