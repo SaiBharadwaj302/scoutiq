@@ -6,9 +6,27 @@
 ![MLflow](https://img.shields.io/badge/MLflow-2.14-blue?logo=mlflow)
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
-![CI](https://github.com/sai23bharadwaj/scoutiq/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/SaiBharadwaj302/scoutiq/actions/workflows/ci.yml/badge.svg)
 
 Three production-grade ML models trained on **88,023 shots** and **3,387,760 passes** from the StatsBomb open football dataset — served via FastAPI with a Streamlit dashboard.
+
+---
+
+## Live Demo
+
+| | Link |
+|---|---|
+| **Dashboard** (AWS EC2) | http://18.214.174.145:8501 |
+| **API docs** (Swagger UI) | http://18.214.174.145:8000/docs |
+| **API health** | http://18.214.174.145:8000/health |
+
+Production runs on a single AWS EC2 instance (t3.small, Ubuntu 24.04) via Docker Compose:
+PostgreSQL 16 feature store + FastAPI model server + Streamlit dashboard, with models
+loaded from the MLflow registry at startup.
+
+```bash
+curl -X POST http://18.214.174.145:8000/v1/predict/xg   -H "Content-Type: application/json"   -d '{"location_x":105,"location_y":38,"technique_name":"Normal","body_part_name":"Right Foot","play_pattern_name":"Regular Play","period":1}'
+```
 
 ---
 
@@ -30,7 +48,7 @@ Three production-grade ML models trained on **88,023 shots** and **3,387,760 pas
 - Git
 
 ```bash
-git clone https://github.com/sai23bharadwaj/scoutiq.git
+git clone https://github.com/SaiBharadwaj302/scoutiq.git
 cd scoutiq
 
 # Copy environment config
@@ -160,9 +178,10 @@ scoutiq/
 │   └── drift_report.py     # Evidently AI drift detection
 ├── tests/
 │   └── test_ingest.py      # 12 unit tests (geometry + 360 features)
-├── app.py                  # Streamlit dashboard
+├── app.py                  # Streamlit dashboard (production — Postgres + MLflow)
+├── streamlit_app/          # Standalone dashboard for Streamlit Cloud (frozen models)
 ├── run_api.py              # API launcher (direct import — Windows-safe)
-├── docker-compose.yml      # PostgreSQL + API
+├── docker-compose.yml      # PostgreSQL + API + dashboard
 └── Dockerfile
 ```
 
@@ -206,6 +225,22 @@ docker exec -it scoutiq_postgres psql -U scoutiq_user -d scoutiq \
 | Orchestration | Prefect 2.19 |
 | Containerisation | Docker Compose |
 | CI | GitHub Actions |
+
+---
+
+## Deployment (AWS EC2)
+
+```bash
+# On an Ubuntu EC2 instance with Docker + Compose installed
+git clone https://github.com/SaiBharadwaj302/scoutiq.git && cd scoutiq
+# copy mlruns/ (model registry) onto the box, then:
+docker compose up -d postgres
+docker exec -i scoutiq_postgres pg_restore -U scoutiq_user -d scoutiq --no-owner < scoutiq.dump
+docker compose up -d --build api dashboard
+```
+
+Security group: 8000 (API) and 8501 (dashboard) public, 22 restricted to admin IP,
+5432 closed. All containers use `restart: unless-stopped` so the stack survives reboots.
 
 ---
 
