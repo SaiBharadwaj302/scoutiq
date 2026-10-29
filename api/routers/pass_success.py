@@ -9,7 +9,7 @@ import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.schemas import PassRequest, PassResponse
-from api.dependencies import get_pass_model
+from api.dependencies import get_pass_model, _production_version
 from models.pass_success.features import build_features
 
 router = APIRouter(prefix="/v1/predict", tags=["Pass Success Model"])
@@ -72,7 +72,7 @@ async def predict_pass(
             completion_probability=round(prob, 4),
             is_high_risk=prob < 0.5,
             pass_length=round(float(length), 2),
-            model_version="scoutiq_pass/1",
+            model_version=_production_version("scoutiq_pass"),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")

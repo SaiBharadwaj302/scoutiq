@@ -91,14 +91,15 @@ def plot_calibration(y_val, probs, run_id):
 def train_pass_model(
     use_360_only: bool = False,
     register: bool = True,
+    sample_size: int | None = None,
 ) -> dict:
-    """Full training pipeline for pass success model."""
+    """Full training pipeline for pass success model. sample_size caps rows (fast runs)."""
     mlflow.set_tracking_uri(MLFLOW_URI)
     mlflow.set_experiment(EXPERIMENT_NAME)
 
     logger.info("═══ Pass Success Model Training Starting ═══")
 
-    X, y = load_training_data(use_360_only=use_360_only)
+    X, y = load_training_data(use_360_only=use_360_only, sample_size=sample_size)
     X_train, X_val, y_train, y_val = train_test_split(
         X, y, test_size=0.2, stratify=y, random_state=42
     )

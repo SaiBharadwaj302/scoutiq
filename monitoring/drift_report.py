@@ -104,6 +104,26 @@ def _load_all_passes() -> pd.DataFrame:
         return pd.read_sql(query, conn)
 
 
+def _load_windows(dataset: str) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    (reference, current) for "shots" or "passes".
+    Reference = ingested 30–60 days ago, current = last 7 days; falls back to an
+    80/20 temporal split of the table when either window is too small.
+    """
+    load_window, load_all, min_rows = {
+        "shots":  (_load_shot_window, _load_all_shots,   100),
+        "passes": (_load_pass_window, _load_all_passes,  500),
+    }[dataset]
+    ref = load_window(REFERENCE_DAYS + 30, REFERENCE_DAYS)
+    cur = load_window(CURRENT_DAYS, 0)
+    if len(ref) < min_rows or len(cur) < min_rows:
+        logger.warning(f"{dataset} windows too small — using 80/20 temporal split of all data")
+        all_rows = load_all()
+        split = int(len(all_rows) * 0.8)
+        ref, cur = all_rows.iloc[:split], all_rows.iloc[split:]
+    return ref, cur
+
+
 # ── Report generation ─────────────────────────────────────────────────────────
 
 def _run_drift_report(
@@ -198,16 +218,7 @@ def check_drift() -> bool:
     ts = datetime.utcnow().strftime("%Y%m%d_%H%M%S")
 
     # ── Shot drift ──────────────────────────────────────────────────────────
-    ref_shots = _load_shot_window(REFERENCE_DAYS + 30, REFERENCE_DAYS)
-    cur_shots = _load_shot_window(CURRENT_DAYS, 0)
-
-    # Fallback: if windows are too small, use a temporal split of all data
-    if len(ref_shots) < 100 or len(cur_shots) < 100:
-        logger.warning("Shot windows too small — using 80/20 temporal split of all data")
-        all_shots = _load_all_shots()
-        split = int(len(all_shots) * 0.8)
-        ref_shots, cur_shots = all_shots.iloc[:split], all_shots.iloc[split:]
-
+    ref_shots, cur_shots = _load_windows("shots")
     shot_result = _run_drift_report(
         reference=ref_shots,
         current=cur_shots,
@@ -216,15 +227,7 @@ def check_drift() -> bool:
     )
 
     # ── Pass drift ──────────────────────────────────────────────────────────
-    ref_passes = _load_pass_window(REFERENCE_DAYS + 30, REFERENCE_DAYS)
-    cur_passes = _load_pass_window(CURRENT_DAYS, 0)
-
-    if len(ref_passes) < 500 or len(cur_passes) < 500:
-        logger.warning("Pass windows too small — using 80/20 temporal split of all data")
-        all_passes = _load_all_passes()
-        split = int(len(all_passes) * 0.8)
-        ref_passes, cur_passes = all_passes.iloc[:split], all_passes.iloc[split:]
-
+    ref_passes, cur_passes = _load_windows("passes")
     pass_result = _run_drift_report(
         reference=ref_passes,
         current=cur_passes,
@@ -259,6 +262,65 @@ def check_drift() -> bool:
 
     logger.info("═══ Drift Detection Complete ═══")
     return overall_drift
+
+
+# ── Structured PSI scores ─────────────────────────────────────────────────────
+
+PSI_THRESHOLD = float(os.getenv("PSI_THRESHOLD", "0.2"))  # >0.2 = significant shift (industry rule of thumb)
+
+# Which monitored dataset feeds which registered model
+MODEL_DATASETS = {"scoutiq_xg": "shots", "scoutiq_pass": "passes"}
+
+
+def _bools_to_int(df: pd.DataFrame) -> pd.DataFrame:
+    return df.astype({c: int for c in df.columns if df[c].dtype == bool})
+
+
+def compute_psi_scores(psi_threshold: float = PSI_THRESHOLD) -> dict[str, dict]:
+    """
+    Per-feature Population Stability Index for each model's monitored features,
+    computed by Evidently (stattest="psi") over the same reference/current
+    windows check_drift() uses.
+
+    Returns:
+        {
+          "scoutiq_xg": {
+              "dataset": "shots",
+              "psi": {"distance_to_goal": 0.013, ...},
+              "max_psi": 0.013,
+              "drifted_features": [...],   # features with PSI > psi_threshold
+              "drift_detected": False,
+              "n_reference": 80000, "n_current": 20000,
+          },
+          "scoutiq_pass": {...},
+        }
+    """
+    from evidently.metrics import DataDriftTable
+
+    scores: dict[str, dict] = {}
+    for model_name, dataset in MODEL_DATASETS.items():
+        ref, cur = _load_windows(dataset)
+        result = {
+            "dataset": dataset, "psi": {}, "max_psi": 0.0, "drifted_features": [],
+            "drift_detected": False, "n_reference": len(ref), "n_current": len(cur),
+        }
+        if ref.empty or cur.empty:
+            logger.warning(f"{model_name}: empty window — PSI not computed")
+            scores[model_name] = result
+            continue
+
+        report = Report(metrics=[DataDriftTable(stattest="psi", stattest_threshold=psi_threshold)])
+        report.run(reference_data=_bools_to_int(ref), current_data=_bools_to_int(cur))
+        columns = report.as_dict()["metrics"][0]["result"]["drift_by_columns"]
+
+        psi_by_col = {c: float(info["drift_score"]) for c, info in columns.items()}
+        result["psi"] = psi_by_col
+        result["max_psi"] = max(psi_by_col.values(), default=0.0)
+        result["drifted_features"] = [c for c, v in psi_by_col.items() if v > psi_threshold]
+        result["drift_detected"] = bool(result["drifted_features"])
+        logger.info(f"{model_name}: max PSI={result['max_psi']:.4f} drifted={result['drifted_features']}")
+        scores[model_name] = result
+    return scores
 
 
 def load_latest_summary() -> dict | None:

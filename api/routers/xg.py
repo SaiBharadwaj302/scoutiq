@@ -9,7 +9,7 @@ import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException
 
 from api.schemas import ShotRequest, XGResponse
-from api.dependencies import get_xg_model
+from api.dependencies import get_xg_model, _production_version
 from models.xg.features import build_features
 
 router = APIRouter(prefix="/v1/predict", tags=["xG Model"])
@@ -79,7 +79,7 @@ async def predict_xg(
             is_big_chance=prob > 0.3,
             distance_to_goal=round(dist, 2),
             angle_to_goal=round(angle, 4),
-            model_version="scoutiq_xg/1",
+            model_version=_production_version("scoutiq_xg"),
         )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")

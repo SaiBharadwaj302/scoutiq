@@ -5,6 +5,7 @@ Model loading and caching for FastAPI dependency injection.
 Models are loaded once at startup and reused across requests —
 this is what keeps p99 latency under 15ms.
 """
+import functools
 import os
 import mlflow
 import mlflow.sklearn
@@ -27,11 +28,11 @@ _player_ids  = None
 _player_names = None
 
 
-def _load_mlflow_model(model_name: str, alias: str = "latest"):
-    """Load a model from MLflow registry."""
+def _load_mlflow_model(model_name: str, alias: str = "Production"):
+    """Load the version the retraining flow promoted (pipeline/retrain_flow.py)."""
     mlflow.set_tracking_uri(MLFLOW_URI)
     try:
-        uri = f"models:/{model_name}/{alias}"
+        uri = f"models:/{model_name}@{alias}"
         model = mlflow.sklearn.load_model(uri)
         logger.info(f"Loaded model: {uri}")
         return model
@@ -95,10 +96,19 @@ def get_similarity_model():
     return _similarity_model
 
 
+@functools.lru_cache  # models load once at startup, so the version is fixed per process
+def _production_version(model_name: str) -> str:
+    try:
+        v = mlflow.MlflowClient(MLFLOW_URI).get_model_version_by_alias(model_name, "Production").version
+    except Exception:
+        v = "1"
+    return f"{model_name}/{v}"
+
+
 def get_model_versions() -> dict[str, str]:
     """Return version info for all loaded models."""
     return {
-        "xg_model":         "scoutiq_xg/1",
-        "pass_model":       "scoutiq_pass/1",
+        "xg_model":         _production_version("scoutiq_xg"),
+        "pass_model":       _production_version("scoutiq_pass"),
         "similarity_model": f"{SIMILARITY_MODEL_NAME}/1",
     }
